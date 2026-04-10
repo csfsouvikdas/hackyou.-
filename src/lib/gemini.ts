@@ -1,17 +1,19 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// ✅ Load API Key
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
 
 if (!apiKey) {
   console.warn("⚠️ Gemini API key missing. Add VITE_GEMINI_API_KEY in .env");
 }
 
+// ✅ Initialize Gemini
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// ✅ Use ONLY a valid, stable model
-const MODEL_NAME = "gemini-1.5-flash-latest";
+// ✅ FIXED MODEL (works with v1beta)
+const MODEL_NAME = "models/gemini-1.5-flash";
 
-// ✅ Create model once (better performance)
+// ✅ Create model once
 const model = genAI.getGenerativeModel({
   model: MODEL_NAME,
 });
@@ -46,7 +48,7 @@ ${context}
     return result.response.text();
   } catch (error) {
     console.error("❌ generateDataStory failed:", error);
-    return "AI Insights currently unavailable. Please try again.";
+    return "AI Insights currently unavailable. Please check API setup.";
   }
 }
 
