@@ -13,26 +13,34 @@ export function UploadZone() {
   const [error, setError] = useState<string | null>(null);
   const { setCsv, setCharts, setCorrelationMatrix } = useDashboardStore();
 
-  const handleFile = useCallback(async (file: File) => {
+  const handleFiles = useCallback(async (files: File[]) => {
     // Reset state
     setError(null);
 
-    if (!file.name.endsWith('.csv')) {
-      setError('Please upload a valid CSV file.');
+    if (files.length === 0) return;
+
+    if (files.some(f => !f.name.endsWith('.csv'))) {
+      setError('Please upload valid CSV files.');
       return;
     }
 
     setParsing(true);
     try {
-      const parsed = await parseCSV(file);
+      let parsed;
+      if (files.length > 1) {
+        const { mergeCSVFiles } = await import('@/lib/csv/merger');
+        parsed = await mergeCSVFiles(files);
+      } else {
+        parsed = await parseCSV(files[0]);
+      }
 
       // Update global state
       setCsv(parsed);
       setCharts(generateAutoCharts(parsed.columns));
       setCorrelationMatrix(computeCorrelationMatrix(parsed.rows, parsed.columns));
     } catch (e) {
-      console.error('Parse error', e);
-      setError('Failed to parse the file. Check your CSV formatting.');
+      console.error('Processing error', e);
+      setError('Failed to process. Check your CSV formatting.');
     } finally {
       setParsing(false);
     }
@@ -41,14 +49,14 @@ export function UploadZone() {
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) handleFiles(files);
+  }, [handleFiles]);
 
   const onFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) handleFiles(files);
+  }, [handleFiles]);
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
@@ -70,6 +78,7 @@ export function UploadZone() {
           id="csv-file-input"
           type="file"
           accept=".csv"
+          multiple
           className="hidden"
           onChange={onFileInput}
           disabled={parsing}

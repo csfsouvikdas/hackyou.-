@@ -36,7 +36,7 @@ function detectType(values: any[]): ColumnType {
   return 'text';
 }
 
-function profileColumn(name: string, values: any[]): ColumnProfile {
+export function profileColumn(name: string, values: any[]): ColumnProfile {
   const type = detectType(values);
   const nonEmpty = values.filter((v) => v !== '' && v !== null && v !== undefined);
   const nullCount = values.length - nonEmpty.length;

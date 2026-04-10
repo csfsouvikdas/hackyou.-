@@ -6,6 +6,8 @@ import {
   ScatterChart as ReScatterChart, Scatter,
   Treemap as ReTreemap,
   AreaChart as ReAreaChart, Area,
+  RadarChart as ReRadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+  RadialBarChart as ReRadialBarChart, RadialBar, Legend as ReLegend,
 } from 'recharts';
 import { CHART_COLOR_VALUES } from '@/lib/chartColors';
 import type { ChartConfig } from '@/types/csv';
@@ -135,6 +137,27 @@ export function ChartRenderer({ config, rows }: ChartRendererProps) {
             <Tooltip {...tooltipStyle} />
             <Area type="monotone" dataKey="value" stroke={CHART_COLOR_VALUES[1]} strokeWidth={3} fillOpacity={1} fill={`url(#${gradientId})`} />
           </ReAreaChart>
+        </ResponsiveContainer>
+      );
+    case 'radar':
+      return (
+        <ResponsiveContainer width="100%" height="100%">
+          <ReRadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+            <PolarGrid stroke="hsl(var(--border))" />
+            <PolarAngleAxis dataKey="name" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+            <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={{ fontSize: 8 }} />
+            <Radar name={config.yCol} dataKey="value" stroke={CHART_COLOR_VALUES[0]} fill={CHART_COLOR_VALUES[0]} fillOpacity={0.5} />
+            <Tooltip {...tooltipStyle} />
+          </ReRadarChart>
+        </ResponsiveContainer>
+      );
+    case 'radial':
+      return (
+        <ResponsiveContainer width="100%" height="100%">
+          <ReRadialBarChart cx="50%" cy="50%" innerRadius="10%" outerRadius="80%" barSize={10} data={chartData}>
+            <RadialBar background dataKey="value" cornerRadius={10} />
+            <Tooltip {...tooltipStyle} />
+          </ReRadialBarChart>
         </ResponsiveContainer>
       );
     case 'pie':

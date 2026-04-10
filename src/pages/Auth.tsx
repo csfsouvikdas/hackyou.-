@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -25,16 +27,27 @@ export default function Auth() {
     }
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: window.location.origin }
-      });
-      if (error) throw error;
-      toast.success("Check your email for the login link!");
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin }
+        });
+        if (error) throw error;
+        toast.success("Registration successful! Check your email for verification.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success("Welcome back!");
+        navigate("/");
+      }
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -58,11 +71,18 @@ export default function Auth() {
           Back to home
         </Button>
 
+        <div className="flex flex-col items-center mb-6">
+          <img src="/logo.png" alt="VIZI" className="h-12 w-auto mb-2" />
+          <span className="text-2xl font-black tracking-tighter">VIZI</span>
+        </div>
+
         <Card className="border-none shadow-2xl shadow-primary/5 bg-background/80 backdrop-blur-xl rounded-3xl overflow-hidden">
           <CardHeader className="space-y-1 text-center pt-8">
-            <CardTitle className="text-3xl font-bold tracking-tight">Welcome back</CardTitle>
-            <CardDescription className="text-base">
-              Sign in to manage your dashboards
+            <CardTitle className="text-3xl font-bold tracking-tight">
+              {isSignUp ? "Create account" : "Welcome back"}
+            </CardTitle>
+            <CardDescription className="text-base text-muted-foreground">
+              {isSignUp ? "Join the premium data storyteller platform" : "Sign in to manage your dashboards"}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 px-8">
@@ -96,30 +116,49 @@ export default function Auth() {
               </div>
             </div>
 
-            <form onSubmit={handleEmailLogin} className="grid gap-4">
-              <div className="grid gap-2">
+            <form onSubmit={handleAuth} className="grid gap-4">
+              <div className="grid gap-3">
                 <Input
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 rounded-2xl bg-secondary/50 border-none px-4"
+                  className="h-12 rounded-2xl bg-secondary/50 border-none px-4 focus-visible:ring-primary"
                   required
+                />
+                <Input
+                  type="password"
+                  placeholder="Your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 rounded-2xl bg-secondary/50 border-none px-4 focus-visible:ring-primary"
+                  required
+                  min={6}
                 />
               </div>
               <Button 
                 type="submit" 
-                className="h-12 rounded-2xl font-bold text-lg"
+                className="h-12 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20"
                 disabled={loading}
               >
                 {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Mail className="mr-2 h-5 w-5" />}
-                Send Magic Link
+                {isSignUp ? "Sign Up" : "Sign In"}
               </Button>
             </form>
+
+            <div className="text-center">
+              <button 
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+              </button>
+            </div>
           </CardContent>
           <CardFooter className="bg-secondary/30 border-t flex flex-col items-center py-6">
-            <p className="text-xs text-muted-foreground text-center max-w-[280px]">
-              By clicking continue, you agree to our Terms of Service and Privacy Policy.
+            <p className="text-xs text-muted-foreground text-center max-w-[280px] leading-relaxed">
+              By clicking continue, you agree to our <button onClick={() => navigate('/terms')} className="underline cursor-pointer hover:text-primary transition-colors">Terms of Service</button> and <span className="underline cursor-default">Privacy Policy</span>.
             </p>
           </CardFooter>
         </Card>

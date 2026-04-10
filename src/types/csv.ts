@@ -22,7 +22,7 @@ export interface ParsedCSV {
   rowCount: number;
 }
 
-export type ChartType = 'bar' | 'line' | 'pie' | 'scatter' | 'heatmap' | 'treemap' | 'area' | 'spline';
+export type ChartType = 'bar' | 'line' | 'pie' | 'scatter' | 'heatmap' | 'treemap' | 'area' | 'spline' | 'radar' | 'radial';
 
 export interface ChartConfig {
   id: string;

@@ -66,12 +66,13 @@ export function cleanCSVData(rows: Record<string, string>[], headers: string[]):
     
     if (isNumeric && values.length > 0) {
       stats.columnsFixed++;
-      const nums = values.map(Number).sort((a, b) => a - b);
-      const median = nums[Math.floor(nums.length / 2)];
+      const nums = values.map(Number);
+      const sum = nums.reduce((a, b) => a + b, 0);
+      const mean = sum / nums.length;
       
       processedRows.forEach(row => {
         if (row[header] === '') {
-          row[header] = median;
+          row[header] = Math.round(mean * 100) / 100;
           stats.cellsFilled++;
         } else {
           row[header] = Number(row[header]);
